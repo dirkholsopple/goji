@@ -45,6 +45,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Credentials {
     /// username and password credentials
     Basic(String, String), // todo: OAuth
+    Cookie(String),
 }
 
 /// Entrypoint into client interface
@@ -141,10 +142,12 @@ impl Jira {
 
         let req = self.client.request(method, &url);
         let builder = match self.credentials {
-            Credentials::Basic(ref user, ref pass) => req
-                .basic_auth(user.to_owned(), Some(pass.to_owned()))
-                .header(CONTENT_TYPE, "application/json"),
+            Credentials::Basic(ref user, ref pass) => {
+                req.basic_auth(user.to_owned(), Some(pass.to_owned()))
+            }
+            Credentials::Cookie(ref cookie_value) => req.header("Cookie", cookie_value.clone()),
         };
+        let builder = builder.header(CONTENT_TYPE, "application/json");
 
         let mut res = match body {
             Some(bod) => builder.body(bod).send()?,

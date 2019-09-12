@@ -322,6 +322,7 @@ pub struct TransitionOption {
     pub id: String,
     pub name: String,
     pub to: TransitionTo,
+    pub fields: BTreeMap<String, FieldMetadata>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -417,4 +418,24 @@ pub struct Resolution {
 #[derive(Serialize, Clone, Debug)]
 pub struct Transition {
     pub id: String,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(untagged)]
+pub enum FieldValue {
+    Choice { id: String, value: String },
+    Unknown(BTreeMap<String, ::serde_json::Value>),
+}
+
+#[derive(Deserialize, Debug)]
+pub struct FieldMetadata {
+    pub required: bool,
+    pub name: String,
+    pub operations: Vec<String>,
+    #[serde(rename = "allowedValues", default)]
+    pub allowed_values: Option<Vec<FieldValue>>,
+    #[serde(rename = "defaultValue", default)]
+    pub default_value: Option<FieldValue>,
+    #[serde(flatten)]
+    pub others: BTreeMap<String, ::serde_json::Value>,
 }
